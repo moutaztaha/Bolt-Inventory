@@ -68,9 +68,9 @@ const Sidebar = () => {
     <div className="bg-white shadow-lg w-64 min-w-64">
       <div className="p-6 border-b border-gray-200">
         <div className="flex flex-col items-center space-y-4">
-          {/* Logo Container with Debug Border */}
+          {/* Logo Container */}
           <div 
-            className="w-24 h-24 flex items-center justify-center border-2 border-red-500"
+            className="w-24 h-24 flex items-center justify-center"
             style={{ minHeight: '96px', minWidth: '96px' }}
           >
             <img 
@@ -81,8 +81,6 @@ const Sidebar = () => {
                 console.log('✅ SIDEBAR LOGO LOADED: Image element loaded successfully');
                 console.log('✅ SIDEBAR LOGO SIZE: Display size:', e.target.offsetWidth, 'x', e.target.offsetHeight);
                 console.log('✅ SIDEBAR LOGO NATURAL: Natural size:', e.target.naturalWidth, 'x', e.target.naturalHeight);
-                // Hide debug border on successful load
-                e.target.parentElement.style.border = 'none';
               }}
               onError={(e) => {
                 console.log('❌ SIDEBAR LOGO ERROR: Image element failed to load');
@@ -103,11 +101,6 @@ const Sidebar = () => {
             >
               FMS
             </div>
-          </div>
-          
-          {/* Logo Status Indicator */}
-          <div className="text-xs text-center">
-            <div id="logo-status" className="text-gray-500">⏳ LOADING</div>
           </div>
           
           <div className="text-center">
