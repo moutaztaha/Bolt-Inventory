@@ -35,6 +35,8 @@ const Sidebar = () => {
   // Logo debug and loading
   React.useEffect(() => {
     console.log('🔍 SIDEBAR MOUNTED: Component initialized');
+    console.log('🔍 USER ROLE CHECK:', user?.role);
+    console.log('🔍 IS ADMIN:', user?.role === 'admin');
     console.log('🔍 LOGO CHECK: Testing logo file accessibility...');
     
     // Test if logo file exists
@@ -47,7 +49,7 @@ const Sidebar = () => {
       console.log('❌ LOGO ERROR: Logo file failed to load from /logo.webp');
     };
     img.src = '/logo.webp';
-  }, []);
+  }, [user]);
 
   return (
     <div className="bg-white shadow-lg w-64 min-w-64">
@@ -147,6 +149,15 @@ const Sidebar = () => {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Debug Info for Admin Check */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="px-6 py-2 text-xs text-gray-500 border-t border-gray-200 mt-4">
+            <div>User: {user?.username || 'Not logged in'}</div>
+            <div>Role: {user?.role || 'No role'}</div>
+            <div>Is Admin: {user?.role === 'admin' ? 'Yes' : 'No'}</div>
           </div>
         )}
       </nav>
