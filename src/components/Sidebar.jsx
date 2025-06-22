@@ -52,7 +52,7 @@ const Sidebar = () => {
           <img 
             src="/logo.webp" 
             alt="Factory Management System" 
-            className="h-8 w-8 object-contain"
+            className="h-16 w-16 object-contain"
           />
           <div>
             <h1 className="text-xl font-bold text-gray-800">FMS</h1>
