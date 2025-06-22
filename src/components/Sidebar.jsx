@@ -46,17 +46,18 @@ const Sidebar = () => {
   ] : [];
 
   return (
-    <div className="bg-white w-64 shadow-lg">
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex flex-col items-center space-y-2">
+    <div className="bg-white w-80 shadow-lg">
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex flex-col items-center space-y-4">
           <img 
             src="/logo.webp" 
             alt="Factory Management System" 
-            className="h-48 w-48 object-contain"
+            className="h-64 w-64 object-contain"
+            style={{ minHeight: '256px', minWidth: '256px' }}
           />
           <div className="text-center">
-            <h1 className="text-xl font-bold text-gray-800">FMS</h1>
-            <p className="text-xs text-gray-600">Factory Management</p>
+            <h1 className="text-2xl font-bold text-gray-800">FMS</h1>
+            <p className="text-sm text-gray-600">Factory Management</p>
           </div>
         </div>
       </div>

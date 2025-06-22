@@ -37,13 +37,14 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center px-4">
-      <div className="max-w-md w-full space-y-8">
+      <div className="max-w-2xl w-full space-y-8">
         <div className="text-center">
-          <div className="flex justify-center">
+          <div className="flex justify-center mb-8">
             <img 
               src="/logo.webp" 
               alt="Factory Management System" 
-              className="h-80 w-80 object-contain"
+              className="h-96 w-96 object-contain"
+              style={{ minHeight: '384px', minWidth: '384px' }}
             />
           </div>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
