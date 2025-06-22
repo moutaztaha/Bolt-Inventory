@@ -12,15 +12,16 @@ import {
   Check,
   X,
   Lock,
-  Unlock
+  Unlock,
+  Save,
+  RefreshCw
 } from 'lucide-react';
 
 const PermissionManagement = () => {
-  const [permissions, setPermissions] = useState([]);
-  const [roles, setRoles] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('permissions');
+  const [hasChanges, setHasChanges] = useState(false);
 
   // Default permissions structure
   const defaultPermissions = [
@@ -62,8 +63,8 @@ const PermissionManagement = () => {
     }
   ];
 
-  // Default role permissions
-  const defaultRolePermissions = {
+  // Default role permissions (this is our "database" for now)
+  const [rolePermissions, setRolePermissions] = useState({
     admin: {
       name: 'Administrator',
       description: 'Full system access',
@@ -95,78 +96,100 @@ const PermissionManagement = () => {
         'view_suppliers'
       ]
     }
-  };
+  });
 
   useEffect(() => {
-    fetchData();
+    fetchUsers();
   }, []);
 
-  const fetchData = async () => {
+  const fetchUsers = async () => {
     try {
-      const [usersRes, permissionsRes] = await Promise.all([
-        axios.get('/api/users'),
-        axios.get('/api/permissions').catch(() => ({ data: [] })) // Fallback if endpoint doesn't exist
-      ]);
-
-      setUsers(usersRes.data);
-      
-      // Use default permissions if API doesn't exist
-      if (permissionsRes.data.length === 0) {
-        setPermissions(defaultPermissions);
-        setRoles(Object.entries(defaultRolePermissions).map(([key, value]) => ({
-          id: key,
-          ...value
-        })));
-      } else {
-        setPermissions(permissionsRes.data.permissions || defaultPermissions);
-        setRoles(permissionsRes.data.roles || []);
-      }
+      const response = await axios.get('/api/users');
+      setUsers(response.data);
     } catch (error) {
-      // Fallback to default data
-      setPermissions(defaultPermissions);
-      setRoles(Object.entries(defaultRolePermissions).map(([key, value]) => ({
-        id: key,
-        ...value
-      })));
-      console.error('Error fetching permission data:', error);
+      toast.error('Error fetching users');
+      console.error('Error fetching users:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const hasPermission = (role, permission) => {
-    const roleData = defaultRolePermissions[role];
+    const roleData = rolePermissions[role];
     return roleData ? roleData.permissions.includes(permission) : false;
   };
 
-  const updateRolePermissions = async (roleId, permissions) => {
-    try {
-      await axios.put(`/api/roles/${roleId}/permissions`, { permissions });
-      toast.success('Permissions updated successfully');
-      fetchData();
-    } catch (error) {
-      toast.error('Error updating permissions');
-    }
+  const togglePermission = (roleId, permission) => {
+    setRolePermissions(prev => {
+      const role = prev[roleId];
+      if (!role) return prev;
+
+      const currentPermissions = role.permissions || [];
+      const newPermissions = currentPermissions.includes(permission)
+        ? currentPermissions.filter(p => p !== permission)
+        : [...currentPermissions, permission];
+
+      setHasChanges(true);
+      
+      return {
+        ...prev,
+        [roleId]: {
+          ...role,
+          permissions: newPermissions
+        }
+      };
+    });
+
+    toast.success(`Permission ${hasPermission(roleId, permission) ? 'removed' : 'added'} for ${rolePermissions[roleId]?.name}`);
   };
 
-  const togglePermission = (roleId, permission) => {
-    const role = roles.find(r => r.id === roleId);
-    if (!role) return;
+  const saveChanges = () => {
+    // In a real application, this would save to the server
+    // For now, we'll just show a success message
+    setHasChanges(false);
+    toast.success('Permission changes saved successfully!');
+    
+    // Log the current state for debugging
+    console.log('Current role permissions:', rolePermissions);
+  };
 
-    const currentPermissions = role.permissions || [];
-    const newPermissions = currentPermissions.includes(permission)
-      ? currentPermissions.filter(p => p !== permission)
-      : [...currentPermissions, permission];
-
-    // Update local state immediately for better UX
-    setRoles(roles.map(r => 
-      r.id === roleId 
-        ? { ...r, permissions: newPermissions }
-        : r
-    ));
-
-    // Update on server
-    updateRolePermissions(roleId, newPermissions);
+  const resetChanges = () => {
+    // Reset to default permissions
+    setRolePermissions({
+      admin: {
+        name: 'Administrator',
+        description: 'Full system access',
+        permissions: defaultPermissions.flatMap(module => module.permissions)
+      },
+      manager: {
+        name: 'Manager',
+        description: 'Management level access',
+        permissions: [
+          'view_dashboard', 'view_stats',
+          'view_inventory', 'create_inventory', 'edit_inventory', 'export_inventory', 'import_inventory',
+          'view_users', 'edit_users',
+          'view_categories', 'create_categories', 'edit_categories',
+          'view_units', 'create_units', 'edit_units',
+          'view_locations', 'create_locations', 'edit_locations',
+          'view_suppliers', 'create_suppliers', 'edit_suppliers',
+          'view_reports', 'export_reports', 'generate_reports'
+        ]
+      },
+      user: {
+        name: 'User',
+        description: 'Basic user access',
+        permissions: [
+          'view_dashboard', 'view_stats',
+          'view_inventory', 'create_inventory', 'edit_inventory',
+          'view_categories',
+          'view_units',
+          'view_locations',
+          'view_suppliers'
+        ]
+      }
+    });
+    setHasChanges(false);
+    toast.success('Permissions reset to defaults');
   };
 
   const getPermissionIcon = (permission) => {
@@ -187,6 +210,11 @@ const PermissionManagement = () => {
     return 'text-gray-600 bg-gray-50';
   };
 
+  const roles = Object.entries(rolePermissions).map(([key, value]) => ({
+    id: key,
+    ...value
+  }));
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -197,9 +225,44 @@ const PermissionManagement = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Permission Management</h1>
-        <p className="text-gray-600 mt-2">Manage user roles and granular permissions</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Permission Management</h1>
+          <p className="text-gray-600 mt-2">Manage user roles and granular permissions</p>
+        </div>
+        
+        {hasChanges && (
+          <div className="flex space-x-3">
+            <button
+              onClick={resetChanges}
+              className="btn-secondary flex items-center"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Reset
+            </button>
+            <button
+              onClick={saveChanges}
+              className="btn-primary flex items-center"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save Changes
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Status Banner */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-center">
+          <Shield className="h-5 w-5 text-blue-500 mr-2" />
+          <div>
+            <h3 className="text-sm font-medium text-blue-900">Permission System Status</h3>
+            <p className="text-sm text-blue-700 mt-1">
+              This is a demonstration permission management system. Changes are stored locally and will reset on page refresh. 
+              In a production environment, these would be saved to the database.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -241,6 +304,9 @@ const PermissionManagement = () => {
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900">{role.name}</h3>
                         <p className="text-sm text-gray-600">{role.description}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {role.permissions.length} permissions assigned
+                        </p>
                       </div>
                       <div className={`p-2 rounded-lg ${
                         role.id === 'admin' ? 'bg-red-100' :
@@ -254,7 +320,7 @@ const PermissionManagement = () => {
                     </div>
 
                     <div className="space-y-4">
-                      {permissions.map((module) => (
+                      {defaultPermissions.map((module) => (
                         <div key={module.module} className="bg-white rounded-lg p-4">
                           <h4 className="font-medium text-gray-900 mb-3">{module.module}</h4>
                           <div className="space-y-2">
@@ -270,7 +336,7 @@ const PermissionManagement = () => {
                                 </div>
                                 <button
                                   onClick={() => togglePermission(role.id, permission)}
-                                  className={`p-1 rounded ${
+                                  className={`p-1 rounded transition-colors ${
                                     hasPermission(role.id, permission)
                                       ? 'text-green-600 bg-green-100 hover:bg-green-200'
                                       : 'text-gray-400 bg-gray-100 hover:bg-gray-200'
@@ -316,7 +382,7 @@ const PermissionManagement = () => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {users.map((user) => {
-                      const userRole = defaultRolePermissions[user.role];
+                      const userRole = rolePermissions[user.role];
                       const permissionCount = userRole ? userRole.permissions.length : 0;
                       
                       return (
@@ -394,7 +460,7 @@ const PermissionManagement = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {permissions.map((module) => (
+              {defaultPermissions.map((module) => (
                 <React.Fragment key={module.module}>
                   <tr className="bg-gray-50">
                     <td className="py-2 px-4 font-medium text-gray-900" colSpan={roles.length + 1}>
@@ -415,17 +481,20 @@ const PermissionManagement = () => {
                       </td>
                       {roles.map((role) => (
                         <td key={role.id} className="py-2 px-4 text-center">
-                          <div className={`inline-flex p-1 rounded ${
-                            hasPermission(role.id, permission)
-                              ? 'text-green-600 bg-green-100'
-                              : 'text-gray-400 bg-gray-100'
-                          }`}>
+                          <button
+                            onClick={() => togglePermission(role.id, permission)}
+                            className={`inline-flex p-1 rounded transition-colors ${
+                              hasPermission(role.id, permission)
+                                ? 'text-green-600 bg-green-100 hover:bg-green-200'
+                                : 'text-gray-400 bg-gray-100 hover:bg-gray-200'
+                            }`}
+                          >
                             {hasPermission(role.id, permission) ? (
                               <Check className="h-4 w-4" />
                             ) : (
                               <X className="h-4 w-4" />
                             )}
-                          </div>
+                          </button>
                         </td>
                       ))}
                     </tr>
