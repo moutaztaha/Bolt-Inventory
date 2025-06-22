@@ -46,18 +46,36 @@ const Sidebar = () => {
   ] : [];
 
   return (
-    <div className="bg-white w-80 shadow-lg">
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex flex-col items-center space-y-4">
-          <img 
-            src="/logo.webp" 
-            alt="Factory Management System" 
-            className="h-64 w-64 object-contain"
-            style={{ minHeight: '256px', minWidth: '256px' }}
-          />
+    <div className="bg-white w-96 shadow-lg">
+      <div className="p-8 border-b border-gray-200">
+        <div className="flex flex-col items-center space-y-6">
+          {/* MASSIVE Logo Container */}
+          <div 
+            className="w-80 h-80 flex items-center justify-center border-4 border-red-500 bg-yellow-100"
+            style={{ 
+              minWidth: '320px', 
+              minHeight: '320px',
+              maxWidth: '320px',
+              maxHeight: '320px'
+            }}
+          >
+            <img 
+              src="/logo.webp" 
+              alt="Factory Management System" 
+              className="w-full h-full object-contain"
+              style={{ 
+                minWidth: '300px', 
+                minHeight: '300px',
+                width: '300px',
+                height: '300px'
+              }}
+              onLoad={() => console.log('Logo loaded successfully')}
+              onError={() => console.log('Logo failed to load')}
+            />
+          </div>
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-800">FMS</h1>
-            <p className="text-sm text-gray-600">Factory Management</p>
+            <h1 className="text-3xl font-bold text-gray-800">FMS</h1>
+            <p className="text-lg text-gray-600">Factory Management</p>
           </div>
         </div>
       </div>
