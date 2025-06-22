@@ -15,11 +15,17 @@ import {
   UserX,
   Settings,
   Eye,
-  EyeOff
+  EyeOff,
+  Building,
+  BarChart3,
+  Users
 } from 'lucide-react';
 import UserModal from './modals/UserModal';
 import UserActivityModal from './modals/UserActivityModal';
 import ConfirmationModal from './modals/ConfirmationModal';
+import DepartmentManagement from './DepartmentManagement';
+import PermissionManagement from './PermissionManagement';
+import UserReports from './UserReports';
 import { useConfirmation } from '../hooks/useConfirmation';
 
 const UserManagement = () => {
@@ -32,7 +38,15 @@ const UserManagement = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [roleFilter, setRoleFilter] = useState('all');
+  const [activeTab, setActiveTab] = useState('users');
   const { confirmationState, showConfirmation, hideConfirmation } = useConfirmation();
+
+  const tabs = [
+    { id: 'users', label: 'Users', icon: Users },
+    { id: 'departments', label: 'Departments', icon: Building },
+    { id: 'permissions', label: 'Permissions', icon: Shield },
+    { id: 'reports', label: 'Reports & Analytics', icon: BarChart3 }
+  ];
 
   useEffect(() => {
     fetchUsers();
@@ -146,231 +160,305 @@ const UserManagement = () => {
       : 'bg-red-100 text-red-800';
   };
 
-  if (loading) {
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'users':
+        return renderUsersTab();
+      case 'departments':
+        return <DepartmentManagement />;
+      case 'permissions':
+        return <PermissionManagement />;
+      case 'reports':
+        return <UserReports />;
+      default:
+        return renderUsersTab();
+    }
+  };
+
+  const renderUsersTab = () => {
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+        </div>
+      );
+    }
+
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Users</h2>
+            <p className="text-gray-600 mt-1">Manage user accounts and access</p>
+          </div>
+          
+          <button onClick={handleAdd} className="btn-primary flex items-center">
+            <Plus className="h-4 w-4 mr-2" />
+            Add User
+          </button>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center">
+              <div className="p-3 rounded-lg bg-primary-50">
+                <User className="h-6 w-6 text-primary-500" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Total Users</p>
+                <p className="text-2xl font-bold text-gray-900">{users.length}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center">
+              <div className="p-3 rounded-lg bg-red-50">
+                <Shield className="h-6 w-6 text-red-500" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Admins</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {users.filter(u => u.role === 'admin').length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center">
+              <div className="p-3 rounded-lg bg-green-50">
+                <UserCheck className="h-6 w-6 text-green-500" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Active Users</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {users.filter(u => u.is_active !== false).length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center">
+              <div className="p-3 rounded-lg bg-yellow-50">
+                <Clock className="h-6 w-6 text-yellow-500" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Recent Logins</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {users.filter(u => u.last_login && 
+                    new Date(u.last_login) > new Date(Date.now() - 24*60*60*1000)).length}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <input
+                  type="text"
+                  placeholder="Search users by name, email, or role..."
+                  className="pl-10 form-input"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              
+              <select
+                className="form-select w-full sm:w-auto"
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+              >
+                <option value="all">All Roles</option>
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="user">User</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    User
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Role & Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Last Activity
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredUsers.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
+                            <User className="h-5 w-5 text-primary-600" />
+                          </div>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{user.username}</div>
+                          <div className="text-sm text-gray-500 flex items-center">
+                            <Mail className="h-3 w-3 mr-1" />
+                            {user.email}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-2">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>
+                          {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                        </span>
+                        <div>
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(user.is_active !== false)}`}>
+                            {user.is_active !== false ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-900">
+                        {user.last_login ? (
+                          <>
+                            <div>{new Date(user.last_login).toLocaleDateString()}</div>
+                            <div className="text-xs text-gray-500">
+                              {new Date(user.last_login).toLocaleTimeString()}
+                            </div>
+                          </>
+                        ) : (
+                          <span className="text-gray-400">Never</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-900">
+                        {new Date(user.created_at).toLocaleDateString()}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleViewActivity(user.id)}
+                          className="text-blue-600 hover:text-blue-900"
+                          title="View Activity"
+                        >
+                          <Clock className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleToggleStatus(user.id, user.is_active !== false, user.username)}
+                          className={`${user.is_active !== false ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
+                          title={user.is_active !== false ? 'Deactivate User' : 'Activate User'}
+                        >
+                          {user.is_active !== false ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                        </button>
+                        <button
+                          onClick={() => handleEdit(user)}
+                          className="text-primary-600 hover:text-primary-900"
+                          title="Edit User"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(user.id, user.username)}
+                          className="text-error-600 hover:text-error-900"
+                          title="Delete User"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {filteredUsers.length === 0 && (
+            <div className="text-center py-12">
+              <User className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No users found</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                {searchTerm ? 'Try adjusting your search criteria' : 'Get started by adding your first user'}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Modals */}
+        {showModal && (
+          <UserModal
+            user={editingUser}
+            onClose={() => setShowModal(false)}
+            onSuccess={() => {
+              setShowModal(false);
+              fetchUsers();
+            }}
+          />
+        )}
+
+        {showActivityModal && (
+          <UserActivityModal
+            userId={selectedUserId}
+            onClose={() => setShowActivityModal(false)}
+          />
+        )}
       </div>
     );
-  }
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-600 mt-2">Manage user accounts, roles, and permissions</p>
-        </div>
-        
-        <button onClick={handleAdd} className="btn-primary flex items-center">
-          <Plus className="h-4 w-4 mr-2" />
-          Add User
-        </button>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+        <p className="text-gray-600 mt-2">Comprehensive user, department, and permission management</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-primary-50">
-              <User className="h-6 w-6 text-primary-500" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Users</p>
-              <p className="text-2xl font-bold text-gray-900">{users.length}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-red-50">
-              <Shield className="h-6 w-6 text-red-500" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Admins</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {users.filter(u => u.role === 'admin').length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-green-50">
-              <UserCheck className="h-6 w-6 text-green-500" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Active Users</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {users.filter(u => u.is_active !== false).length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-yellow-50">
-              <Clock className="h-6 w-6 text-yellow-500" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Recent Logins</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {users.filter(u => u.last_login && 
-                  new Date(u.last_login) > new Date(Date.now() - 24*60*60*1000)).length}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      {/* Tabs */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <input
-                type="text"
-                placeholder="Search users by name, email, or role..."
-                className="pl-10 form-input"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            
-            <select
-              className="form-select w-full sm:w-auto"
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-            >
-              <option value="all">All Roles</option>
-              <option value="admin">Admin</option>
-              <option value="manager">Manager</option>
-              <option value="user">User</option>
-            </select>
-          </div>
+        <div className="border-b border-gray-200">
+          <nav className="flex space-x-8 px-6">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center ${
+                    activeTab === tab.id
+                      ? 'border-primary-500 text-primary-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Icon className="h-4 w-4 mr-2" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </nav>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role & Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Activity
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Created
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
-                          <User className="h-5 w-5 text-primary-600" />
-                        </div>
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{user.username}</div>
-                        <div className="text-sm text-gray-500 flex items-center">
-                          <Mail className="h-3 w-3 mr-1" />
-                          {user.email}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="space-y-2">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>
-                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                      </span>
-                      <div>
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(user.is_active !== false)}`}>
-                          {user.is_active !== false ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">
-                      {user.last_login ? (
-                        <>
-                          <div>{new Date(user.last_login).toLocaleDateString()}</div>
-                          <div className="text-xs text-gray-500">
-                            {new Date(user.last_login).toLocaleTimeString()}
-                          </div>
-                        </>
-                      ) : (
-                        <span className="text-gray-400">Never</span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">
-                      {new Date(user.created_at).toLocaleDateString()}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleViewActivity(user.id)}
-                        className="text-blue-600 hover:text-blue-900"
-                        title="View Activity"
-                      >
-                        <Clock className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleToggleStatus(user.id, user.is_active !== false, user.username)}
-                        className={`${user.is_active !== false ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
-                        title={user.is_active !== false ? 'Deactivate User' : 'Activate User'}
-                      >
-                        {user.is_active !== false ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
-                      </button>
-                      <button
-                        onClick={() => handleEdit(user)}
-                        className="text-primary-600 hover:text-primary-900"
-                        title="Edit User"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(user.id, user.username)}
-                        className="text-error-600 hover:text-error-900"
-                        title="Delete User"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="p-6">
+          {renderTabContent()}
         </div>
-
-        {filteredUsers.length === 0 && (
-          <div className="text-center py-12">
-            <User className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No users found</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              {searchTerm ? 'Try adjusting your search criteria' : 'Get started by adding your first user'}
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Custom Confirmation Modal */}
@@ -385,25 +473,6 @@ const UserManagement = () => {
         type={confirmationState.type}
         icon={confirmationState.icon}
       />
-
-      {/* Modals */}
-      {showModal && (
-        <UserModal
-          user={editingUser}
-          onClose={() => setShowModal(false)}
-          onSuccess={() => {
-            setShowModal(false);
-            fetchUsers();
-          }}
-        />
-      )}
-
-      {showActivityModal && (
-        <UserActivityModal
-          userId={selectedUserId}
-          onClose={() => setShowActivityModal(false)}
-        />
-      )}
     </div>
   );
 };
