@@ -45,82 +45,97 @@ const Sidebar = () => {
     { to: '/reports', icon: BarChart3, label: 'Reports & Analytics' }
   ] : [];
 
+  // SIMPLE LOGO TEST - Log everything to console
+  React.useEffect(() => {
+    console.log('🔍 LOGO DEBUG: Sidebar component mounted');
+    console.log('🔍 LOGO DEBUG: Checking logo file...');
+    
+    // Test if logo file exists
+    const img = new Image();
+    img.onload = () => {
+      console.log('✅ LOGO SUCCESS: Logo file loaded successfully');
+      console.log('✅ LOGO INFO: Natural size:', img.naturalWidth, 'x', img.naturalHeight);
+    };
+    img.onerror = () => {
+      console.log('❌ LOGO ERROR: Logo file failed to load from /logo.webp');
+    };
+    img.src = '/logo.webp';
+  }, []);
+
   return (
-    <div className="bg-white shadow-lg" style={{ width: '500px', minWidth: '500px' }}>
+    <div className="bg-white shadow-lg" style={{ width: '600px', minWidth: '600px' }}>
       <div className="p-8 border-b border-gray-200">
         <div className="flex flex-col items-center space-y-6">
-          {/* MASSIVE Logo Container with Multiple Fallbacks */}
+          {/* MASSIVE LOGO TEST CONTAINER */}
           <div 
-            className="flex items-center justify-center"
             style={{ 
-              width: '400px', 
-              height: '400px',
-              minWidth: '400px', 
-              minHeight: '400px',
-              border: '5px solid red',
+              width: '500px', 
+              height: '500px',
+              border: '10px solid red',
               backgroundColor: 'yellow',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               position: 'relative'
             }}
           >
-            {/* Try multiple logo sources */}
+            {/* LOGO IMAGE */}
             <img 
               src="/logo.webp" 
               alt="Factory Management System" 
               style={{ 
-                width: '380px',
-                height: '380px',
-                minWidth: '380px',
-                minHeight: '380px',
+                width: '480px',
+                height: '480px',
                 objectFit: 'contain',
-                display: 'block'
+                border: '5px solid blue'
               }}
-              onLoad={() => console.log('✅ Logo loaded successfully from /logo.webp')}
+              onLoad={(e) => {
+                console.log('✅ LOGO LOADED: Image element loaded successfully');
+                console.log('✅ LOGO SIZE: Display size:', e.target.offsetWidth, 'x', e.target.offsetHeight);
+                console.log('✅ LOGO NATURAL: Natural size:', e.target.naturalWidth, 'x', e.target.naturalHeight);
+              }}
               onError={(e) => {
-                console.log('❌ Logo failed to load from /logo.webp, trying fallback');
-                e.target.src = '/public/logo.webp';
-                e.target.onerror = () => {
-                  console.log('❌ Logo failed to load from /public/logo.webp, trying dist');
-                  e.target.src = '/dist/logo.webp';
-                  e.target.onerror = () => {
-                    console.log('❌ All logo sources failed');
-                    e.target.style.display = 'none';
-                    e.target.nextElementSibling.style.display = 'block';
-                  };
-                };
+                console.log('❌ LOGO ERROR: Image element failed to load');
+                e.target.style.display = 'none';
+                e.target.nextElementSibling.style.display = 'flex';
               }}
             />
             
-            {/* Fallback content */}
+            {/* FALLBACK CONTENT */}
             <div 
               style={{ 
                 display: 'none',
-                width: '380px',
-                height: '380px',
+                width: '480px',
+                height: '480px',
                 backgroundColor: '#3b82f6',
                 color: 'white',
                 fontSize: '48px',
                 fontWeight: 'bold',
-                textAlign: 'center',
-                lineHeight: '380px'
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '5px solid green'
               }}
             >
-              FMS LOGO
+              NO LOGO
             </div>
             
-            {/* Debug info overlay */}
+            {/* DEBUG OVERLAY */}
             <div 
               style={{
                 position: 'absolute',
-                top: '5px',
-                left: '5px',
-                backgroundColor: 'rgba(0,0,0,0.7)',
+                top: '10px',
+                left: '10px',
+                backgroundColor: 'rgba(0,0,0,0.8)',
                 color: 'white',
-                padding: '5px',
-                fontSize: '12px',
-                zIndex: 1000
+                padding: '10px',
+                fontSize: '16px',
+                zIndex: 1000,
+                border: '2px solid white'
               }}
             >
-              Container: 400×400px
+              CONTAINER: 500×500px<br/>
+              IMAGE: 480×480px<br/>
+              CHECK CONSOLE!
             </div>
           </div>
           
