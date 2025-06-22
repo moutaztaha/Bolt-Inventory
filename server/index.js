@@ -46,6 +46,9 @@ app.use('/uploads', express.static('uploads'));
 // Database setup with migration system
 const db = new sqlite3.Database('./warehouse.db');
 
+// Configure SQLite to handle busy database situations
+db.configure('busyTimeout', 5000); // Wait up to 5 seconds if database is busy
+
 // Make database available to routes
 app.locals.db = db;
 
@@ -125,6 +128,9 @@ const initializeDatabase = async () => {
   try {
     console.log('🚀 Initializing database...');
     
+    // Add a small delay to ensure database is ready
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     const migrator = new DatabaseMigrator(db);
     const seeder = new DatabaseSeeder(db);
     
@@ -133,13 +139,22 @@ const initializeDatabase = async () => {
     console.log('🔧 Setting up schema...');
     await migrator.ensureSchemaUpdates();
     
+    // Add delay between operations to prevent database locking
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
     // Then run migrations (which will now be cleaned of problematic SQL)
     console.log('📦 Running migrations...');
     await migrator.runMigrations();
     
+    // Add delay between operations
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
     // Ensure admin user exists and is properly configured
     console.log('👤 Setting up admin user...');
     await seeder.ensureAdminUser();
+    
+    // Add delay between operations
+    await new Promise(resolve => setTimeout(resolve, 200));
     
     // Seed initial data
     console.log('🌱 Seeding initial data...');
