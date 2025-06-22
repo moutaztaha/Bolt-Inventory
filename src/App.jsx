@@ -43,12 +43,6 @@ function App() {
               <Route path="inventory" element={<Inventory />} />
               <Route path="requisitions" element={<Requisitions />} />
               <Route path="profile" element={<Profile />} />
-              
-              {/* Redirect any old routes to dashboard */}
-              <Route path="users" element={<Navigate to="/" replace />} />
-              <Route path="departments" element={<Navigate to="/" replace />} />
-              <Route path="permissions" element={<Navigate to="/" replace />} />
-              <Route path="reports" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>
         </div>
