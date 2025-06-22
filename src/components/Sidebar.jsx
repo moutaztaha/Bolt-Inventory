@@ -46,36 +46,87 @@ const Sidebar = () => {
   ] : [];
 
   return (
-    <div className="bg-white w-96 shadow-lg">
+    <div className="bg-white shadow-lg" style={{ width: '500px', minWidth: '500px' }}>
       <div className="p-8 border-b border-gray-200">
         <div className="flex flex-col items-center space-y-6">
-          {/* MASSIVE Logo Container */}
+          {/* MASSIVE Logo Container with Multiple Fallbacks */}
           <div 
-            className="w-80 h-80 flex items-center justify-center border-4 border-red-500 bg-yellow-100"
+            className="flex items-center justify-center"
             style={{ 
-              minWidth: '320px', 
-              minHeight: '320px',
-              maxWidth: '320px',
-              maxHeight: '320px'
+              width: '400px', 
+              height: '400px',
+              minWidth: '400px', 
+              minHeight: '400px',
+              border: '5px solid red',
+              backgroundColor: 'yellow',
+              position: 'relative'
             }}
           >
+            {/* Try multiple logo sources */}
             <img 
               src="/logo.webp" 
               alt="Factory Management System" 
-              className="w-full h-full object-contain"
               style={{ 
-                minWidth: '300px', 
-                minHeight: '300px',
-                width: '300px',
-                height: '300px'
+                width: '380px',
+                height: '380px',
+                minWidth: '380px',
+                minHeight: '380px',
+                objectFit: 'contain',
+                display: 'block'
               }}
-              onLoad={() => console.log('Logo loaded successfully')}
-              onError={() => console.log('Logo failed to load')}
+              onLoad={() => console.log('✅ Logo loaded successfully from /logo.webp')}
+              onError={(e) => {
+                console.log('❌ Logo failed to load from /logo.webp, trying fallback');
+                e.target.src = '/public/logo.webp';
+                e.target.onerror = () => {
+                  console.log('❌ Logo failed to load from /public/logo.webp, trying dist');
+                  e.target.src = '/dist/logo.webp';
+                  e.target.onerror = () => {
+                    console.log('❌ All logo sources failed');
+                    e.target.style.display = 'none';
+                    e.target.nextElementSibling.style.display = 'block';
+                  };
+                };
+              }}
             />
+            
+            {/* Fallback content */}
+            <div 
+              style={{ 
+                display: 'none',
+                width: '380px',
+                height: '380px',
+                backgroundColor: '#3b82f6',
+                color: 'white',
+                fontSize: '48px',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                lineHeight: '380px'
+              }}
+            >
+              FMS LOGO
+            </div>
+            
+            {/* Debug info overlay */}
+            <div 
+              style={{
+                position: 'absolute',
+                top: '5px',
+                left: '5px',
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                color: 'white',
+                padding: '5px',
+                fontSize: '12px',
+                zIndex: 1000
+              }}
+            >
+              Container: 400×400px
+            </div>
           </div>
+          
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-800">FMS</h1>
-            <p className="text-lg text-gray-600">Factory Management</p>
+            <h1 className="text-4xl font-bold text-gray-800">FMS</h1>
+            <p className="text-xl text-gray-600">Factory Management</p>
           </div>
         </div>
       </div>
@@ -156,7 +207,7 @@ const Sidebar = () => {
                 }
               >
                 <Icon className="h-5 w-5 mr-3" />
-                <span className="font-medium">{item.label}</span>
+                <span className="font-medium">{label}</span>
                 <ChevronRight className="h-4 w-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
               </NavLink>
             );
