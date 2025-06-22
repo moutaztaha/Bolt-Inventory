@@ -9,7 +9,8 @@ import {
   ChevronDown,
   Building,
   BarChart3,
-  Shield
+  Shield,
+  FileText
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -28,6 +29,7 @@ const Sidebar = () => {
   const navItems = [
     { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/inventory', icon: Package, label: 'Inventory' },
+    { to: '/requisitions', icon: FileText, label: 'Requisitions' },
   ];
 
   // Add admin-only routes with hierarchical structure
@@ -47,8 +49,8 @@ const Sidebar = () => {
 
   // Logo debug and loading
   React.useEffect(() => {
-    console.log('🔍 LOGO DEBUG: Sidebar component mounted');
-    console.log('🔍 LOGO DEBUG: Checking logo file...');
+    console.log('🔍 SIDEBAR MOUNTED: Component initialized');
+    console.log('🔍 LOGO CHECK: Testing logo file accessibility...');
     
     // Test if logo file exists
     const img = new Image();
@@ -66,20 +68,25 @@ const Sidebar = () => {
     <div className="bg-white shadow-lg w-64 min-w-64">
       <div className="p-6 border-b border-gray-200">
         <div className="flex flex-col items-center space-y-4">
-          {/* Logo Container */}
-          <div className="w-24 h-24 flex items-center justify-center">
+          {/* Logo Container with Debug Border */}
+          <div 
+            className="w-24 h-24 flex items-center justify-center border-2 border-red-500"
+            style={{ minHeight: '96px', minWidth: '96px' }}
+          >
             <img 
               src="/logo.webp" 
               alt="Factory Management System" 
               className="w-full h-full object-contain"
               onLoad={(e) => {
-                console.log('✅ LOGO LOADED: Image element loaded successfully');
-                console.log('✅ LOGO SIZE: Display size:', e.target.offsetWidth, 'x', e.target.offsetHeight);
-                console.log('✅ LOGO NATURAL: Natural size:', e.target.naturalWidth, 'x', e.target.naturalHeight);
+                console.log('✅ SIDEBAR LOGO LOADED: Image element loaded successfully');
+                console.log('✅ SIDEBAR LOGO SIZE: Display size:', e.target.offsetWidth, 'x', e.target.offsetHeight);
+                console.log('✅ SIDEBAR LOGO NATURAL: Natural size:', e.target.naturalWidth, 'x', e.target.naturalHeight);
+                // Hide debug border on successful load
+                e.target.parentElement.style.border = 'none';
               }}
               onError={(e) => {
-                console.log('❌ LOGO ERROR: Image element failed to load');
-                console.log('❌ LOGO SRC:', e.target.src);
+                console.log('❌ SIDEBAR LOGO ERROR: Image element failed to load');
+                console.log('❌ SIDEBAR LOGO SRC:', e.target.src);
                 // Hide the image and show fallback
                 e.target.style.display = 'none';
                 const fallback = e.target.nextElementSibling;
@@ -96,6 +103,11 @@ const Sidebar = () => {
             >
               FMS
             </div>
+          </div>
+          
+          {/* Logo Status Indicator */}
+          <div className="text-xs text-center">
+            <div id="logo-status" className="text-gray-500">⏳ LOADING</div>
           </div>
           
           <div className="text-center">

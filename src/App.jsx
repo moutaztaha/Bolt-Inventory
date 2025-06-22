@@ -6,6 +6,7 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Layout from './components/Layout';
 import Inventory from './components/Inventory';
+import Requisitions from './components/Requisitions';
 import UserManagement from './components/UserManagement';
 import Profile from './components/Profile';
 
@@ -63,6 +64,7 @@ function App() {
             >
               <Route index element={<Dashboard />} />
               <Route path="inventory" element={<Inventory />} />
+              <Route path="requisitions" element={<Requisitions />} />
               <Route path="profile" element={<Profile />} />
               
               {/* Admin Routes - All user management under one route */}

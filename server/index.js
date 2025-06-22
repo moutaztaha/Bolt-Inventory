@@ -21,6 +21,7 @@ import importExportRoutes from './routes/import-export.js';
 import departmentRoutes from './routes/departments.js';
 import reportRoutes from './routes/reports.js';
 import uploadRoutes from './routes/upload.js';
+import requisitionRoutes from './routes/requisitions.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -92,6 +93,7 @@ app.use('/api/dashboard', authenticateToken, dashboardRoutes);
 app.use('/api/database', authenticateToken, databaseRoutes);
 app.use('/api/departments', authenticateToken, requireAdmin, departmentRoutes);
 app.use('/api/reports', authenticateToken, reportRoutes);
+app.use('/api/requisitions', authenticateToken, requisitionRoutes);
 app.use('/api', authenticateToken, importExportRoutes);
 app.use('/api', authenticateToken, uploadRoutes);
 
@@ -218,7 +220,7 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-process.on('un handledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason, promise) => {
   console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
   process.exit(1);
 });
