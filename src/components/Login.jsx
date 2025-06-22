@@ -39,40 +39,35 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center px-4">
       <div className="max-w-4xl w-full space-y-8">
         <div className="text-center">
-          {/* MASSIVE Logo Container with Debug Border */}
+          {/* Logo Container */}
           <div 
             className="flex justify-center mb-8 w-full"
-            style={{ minHeight: '500px' }}
+            style={{ minHeight: '200px' }}
           >
             <div 
-              className="border-4 border-red-500 bg-yellow-100 flex items-center justify-center"
+              className="flex items-center justify-center"
               style={{ 
-                width: '500px', 
-                height: '500px',
-                minWidth: '500px',
-                minHeight: '500px'
+                width: '200px', 
+                height: '200px',
+                minWidth: '200px',
+                minHeight: '200px'
               }}
             >
               <img 
                 src="/logo.webp" 
-                alt="Factory Management System" 
+                alt="Warehouse Management System" 
                 className="w-full h-full object-contain"
-                style={{ 
-                  width: '480px',
-                  height: '480px',
-                  minWidth: '480px',
-                  minHeight: '480px'
-                }}
                 onLoad={() => console.log('Login logo loaded successfully')}
                 onError={() => console.log('Login logo failed to load')}
               />
             </div>
           </div>
+          
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Factory Management System
+            Warehouse Management System
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Sign in to access your factory operations
+            Sign in to access your warehouse operations
           </p>
         </div>
         
