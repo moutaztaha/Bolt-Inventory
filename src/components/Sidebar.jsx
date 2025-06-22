@@ -45,7 +45,7 @@ const Sidebar = () => {
     { to: '/reports', icon: BarChart3, label: 'Reports & Analytics' }
   ] : [];
 
-  // SIMPLE LOGO TEST - Log everything to console
+  // Logo debug and loading
   React.useEffect(() => {
     console.log('🔍 LOGO DEBUG: Sidebar component mounted');
     console.log('🔍 LOGO DEBUG: Checking logo file...');
@@ -63,32 +63,15 @@ const Sidebar = () => {
   }, []);
 
   return (
-    <div className="bg-white shadow-lg" style={{ width: '600px', minWidth: '600px' }}>
-      <div className="p-8 border-b border-gray-200">
-        <div className="flex flex-col items-center space-y-6">
-          {/* MASSIVE LOGO TEST CONTAINER */}
-          <div 
-            style={{ 
-              width: '500px', 
-              height: '500px',
-              border: '10px solid red',
-              backgroundColor: 'yellow',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative'
-            }}
-          >
-            {/* LOGO IMAGE */}
+    <div className="bg-white shadow-lg w-64 min-w-64">
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex flex-col items-center space-y-4">
+          {/* Logo Container */}
+          <div className="w-24 h-24 flex items-center justify-center">
             <img 
               src="/logo.webp" 
               alt="Factory Management System" 
-              style={{ 
-                width: '480px',
-                height: '480px',
-                objectFit: 'contain',
-                border: '5px solid blue'
-              }}
+              className="w-full h-full object-contain"
               onLoad={(e) => {
                 console.log('✅ LOGO LOADED: Image element loaded successfully');
                 console.log('✅ LOGO SIZE: Display size:', e.target.offsetWidth, 'x', e.target.offsetHeight);
@@ -96,52 +79,28 @@ const Sidebar = () => {
               }}
               onError={(e) => {
                 console.log('❌ LOGO ERROR: Image element failed to load');
+                console.log('❌ LOGO SRC:', e.target.src);
+                // Hide the image and show fallback
                 e.target.style.display = 'none';
-                e.target.nextElementSibling.style.display = 'flex';
+                const fallback = e.target.nextElementSibling;
+                if (fallback) {
+                  fallback.style.display = 'flex';
+                }
               }}
             />
             
-            {/* FALLBACK CONTENT */}
+            {/* Fallback Logo */}
             <div 
-              style={{ 
-                display: 'none',
-                width: '480px',
-                height: '480px',
-                backgroundColor: '#3b82f6',
-                color: 'white',
-                fontSize: '48px',
-                fontWeight: 'bold',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '5px solid green'
-              }}
+              className="w-24 h-24 bg-primary-500 text-white text-2xl font-bold rounded-lg flex items-center justify-center"
+              style={{ display: 'none' }}
             >
-              NO LOGO
-            </div>
-            
-            {/* DEBUG OVERLAY */}
-            <div 
-              style={{
-                position: 'absolute',
-                top: '10px',
-                left: '10px',
-                backgroundColor: 'rgba(0,0,0,0.8)',
-                color: 'white',
-                padding: '10px',
-                fontSize: '16px',
-                zIndex: 1000,
-                border: '2px solid white'
-              }}
-            >
-              CONTAINER: 500×500px<br/>
-              IMAGE: 480×480px<br/>
-              CHECK CONSOLE!
+              FMS
             </div>
           </div>
           
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-800">FMS</h1>
-            <p className="text-xl text-gray-600">Factory Management</p>
+            <h1 className="text-xl font-bold text-gray-800">Factory Management</h1>
+            <p className="text-sm text-gray-600">System</p>
           </div>
         </div>
       </div>
