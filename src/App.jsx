@@ -8,8 +8,12 @@ import Layout from './components/Layout';
 import Inventory from './components/Inventory';
 import Requisitions from './components/Requisitions';
 import Profile from './components/Profile';
+import Users from './components/Users';
+import Departments from './components/Departments';
+import Permissions from './components/Permissions';
+import Reports from './components/Reports';
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, adminOnly = false }) {
   const { user, loading } = useAuth();
   
   if (loading) {
@@ -20,7 +24,15 @@ function ProtectedRoute({ children }) {
     );
   }
   
-  return user ? children : <Navigate to="/login" />;
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  if (adminOnly && user.role !== 'admin') {
+    return <Navigate to="/" />;
+  }
+  
+  return children;
 }
 
 function App() {
@@ -43,6 +55,28 @@ function App() {
               <Route path="inventory" element={<Inventory />} />
               <Route path="requisitions" element={<Requisitions />} />
               <Route path="profile" element={<Profile />} />
+              
+              {/* Admin Only Routes */}
+              <Route path="users" element={
+                <ProtectedRoute adminOnly={true}>
+                  <Users />
+                </ProtectedRoute>
+              } />
+              <Route path="departments" element={
+                <ProtectedRoute adminOnly={true}>
+                  <Departments />
+                </ProtectedRoute>
+              } />
+              <Route path="permissions" element={
+                <ProtectedRoute adminOnly={true}>
+                  <Permissions />
+                </ProtectedRoute>
+              } />
+              <Route path="reports" element={
+                <ProtectedRoute adminOnly={true}>
+                  <Reports />
+                </ProtectedRoute>
+              } />
             </Route>
           </Routes>
         </div>

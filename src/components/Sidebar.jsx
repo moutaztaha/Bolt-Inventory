@@ -5,16 +5,31 @@ import {
   Package, 
   LayoutDashboard,
   ChevronRight,
-  FileText
+  ChevronDown,
+  FileText,
+  Users,
+  Building,
+  Shield,
+  BarChart3,
+  User
 } from 'lucide-react';
 
 const Sidebar = () => {
   const { user } = useAuth();
+  const [userManagementOpen, setUserManagementOpen] = useState(false);
 
   const navItems = [
     { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/inventory', icon: Package, label: 'Inventory' },
     { to: '/requisitions', icon: FileText, label: 'Requisitions' },
+  ];
+
+  // User Management sub-items (only for admin users)
+  const userManagementItems = [
+    { to: '/users', icon: User, label: 'Users' },
+    { to: '/departments', icon: Building, label: 'Departments' },
+    { to: '/permissions', icon: Shield, label: 'Permissions' },
+    { to: '/reports', icon: BarChart3, label: 'Reports & Analytics' },
   ];
 
   // Logo debug and loading
@@ -81,7 +96,7 @@ const Sidebar = () => {
       </div>
       
       <nav className="mt-6">
-        {/* Navigation Items */}
+        {/* Main Navigation Items */}
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
@@ -97,6 +112,43 @@ const Sidebar = () => {
             <ChevronRight className="h-4 w-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
           </NavLink>
         ))}
+
+        {/* User Management Section (Admin Only) */}
+        {user?.role === 'admin' && (
+          <div>
+            <button
+              onClick={() => setUserManagementOpen(!userManagementOpen)}
+              className="w-full flex items-center px-6 py-3 text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors duration-200 group"
+            >
+              <Users className="h-5 w-5 mr-3" />
+              <span className="font-medium">User Management</span>
+              {userManagementOpen ? (
+                <ChevronDown className="h-4 w-4 ml-auto transition-transform" />
+              ) : (
+                <ChevronRight className="h-4 w-4 ml-auto transition-transform" />
+              )}
+            </button>
+            
+            {userManagementOpen && (
+              <div className="bg-gray-50">
+                {userManagementItems.map(({ to, icon: Icon, label }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    className={({ isActive }) =>
+                      `flex items-center px-12 py-2 text-sm text-gray-600 hover:bg-primary-50 hover:text-primary-700 transition-colors duration-200 ${
+                        isActive ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500' : ''
+                      }`
+                    }
+                  >
+                    <Icon className="h-4 w-4 mr-3" />
+                    <span className="font-medium">{label}</span>
+                  </NavLink>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </nav>
     </div>
   );
