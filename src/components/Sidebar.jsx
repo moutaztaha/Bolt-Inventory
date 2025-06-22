@@ -7,7 +7,6 @@ import {
   Users,
   ChevronRight,
   ChevronDown,
-  User,
   Building,
   BarChart3,
   Shield
@@ -29,7 +28,6 @@ const Sidebar = () => {
   const navItems = [
     { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/inventory', icon: Package, label: 'Inventory' },
-    { to: '/profile', icon: User, label: 'My Profile' },
   ];
 
   // Add admin-only routes with hierarchical structure

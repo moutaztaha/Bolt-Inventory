@@ -1,14 +1,20 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const Header = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     toast.success('Logged out successfully');
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
   };
 
   return (
@@ -24,20 +30,24 @@ const Header = () => {
         </div>
         
         <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2 text-gray-700">
+          <button
+            onClick={handleProfileClick}
+            className="flex items-center space-x-2 text-gray-700 hover:text-primary-600 transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-50"
+            title="My Profile"
+          >
             <User className="h-5 w-5" />
-            <span className="font-medium">{user?.username}</span>
-            <span className="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full">
-              {user?.role}
-            </span>
-          </div>
+            <span className="font-medium">My Profile</span>
+          </button>
+          
+          <div className="w-px h-6 bg-gray-300"></div>
           
           <button
             onClick={handleLogout}
-            className="flex items-center space-x-2 text-gray-700 hover:text-error-600 transition-colors duration-200"
+            className="flex items-center space-x-2 text-gray-700 hover:text-error-600 transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-50"
+            title="Logout"
           >
             <LogOut className="h-5 w-5" />
-            <span>Logout</span>
+            <span className="font-medium">Logout</span>
           </button>
         </div>
       </div>
