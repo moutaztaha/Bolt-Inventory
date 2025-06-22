@@ -33,7 +33,7 @@ const PermissionManagement = () => {
     permissions: []
   });
 
-  // Default permissions structure
+  // Default permissions structure - UPDATED with Requisitions
   const defaultPermissions = [
     {
       module: 'Dashboard',
@@ -42,6 +42,10 @@ const PermissionManagement = () => {
     {
       module: 'Inventory',
       permissions: ['view_inventory', 'create_inventory', 'edit_inventory', 'delete_inventory', 'export_inventory', 'import_inventory']
+    },
+    {
+      module: 'Requisitions',
+      permissions: ['view_requisitions', 'create_requisitions', 'edit_requisitions', 'delete_requisitions', 'approve_requisitions', 'submit_requisitions']
     },
     {
       module: 'Users',
@@ -73,7 +77,7 @@ const PermissionManagement = () => {
     }
   ];
 
-  // Default role permissions with ability to add custom roles
+  // Default role permissions with ability to add custom roles - UPDATED with Requisitions
   const [rolePermissions, setRolePermissions] = useState({
     admin: {
       name: 'Administrator',
@@ -88,6 +92,7 @@ const PermissionManagement = () => {
       permissions: [
         'view_dashboard', 'view_stats',
         'view_inventory', 'create_inventory', 'edit_inventory', 'export_inventory', 'import_inventory',
+        'view_requisitions', 'create_requisitions', 'edit_requisitions', 'approve_requisitions', 'submit_requisitions',
         'view_users', 'edit_users',
         'view_categories', 'create_categories', 'edit_categories',
         'view_units', 'create_units', 'edit_units',
@@ -103,6 +108,7 @@ const PermissionManagement = () => {
       permissions: [
         'view_dashboard', 'view_stats',
         'view_inventory', 'create_inventory', 'edit_inventory',
+        'view_requisitions', 'create_requisitions', 'edit_requisitions', 'submit_requisitions',
         'view_categories',
         'view_units',
         'view_locations',
@@ -209,6 +215,7 @@ const PermissionManagement = () => {
         permissions: [
           'view_dashboard', 'view_stats',
           'view_inventory', 'create_inventory', 'edit_inventory', 'export_inventory', 'import_inventory',
+          'view_requisitions', 'create_requisitions', 'edit_requisitions', 'approve_requisitions', 'submit_requisitions',
           'view_users', 'edit_users',
           'view_categories', 'create_categories', 'edit_categories',
           'view_units', 'create_units', 'edit_units',
@@ -224,6 +231,7 @@ const PermissionManagement = () => {
         permissions: [
           'view_dashboard', 'view_stats',
           'view_inventory', 'create_inventory', 'edit_inventory',
+          'view_requisitions', 'create_requisitions', 'edit_requisitions', 'submit_requisitions',
           'view_categories',
           'view_units',
           'view_locations',
