@@ -32,24 +32,17 @@ const Sidebar = () => {
     { to: '/reports', icon: BarChart3, label: 'Reports & Analytics' },
   ];
 
-  // Logo debug and loading
+  // Debug logging
   React.useEffect(() => {
-    console.log('🔍 SIDEBAR MOUNTED: Component initialized');
-    console.log('🔍 USER ROLE CHECK:', user?.role);
-    console.log('🔍 IS ADMIN:', user?.role === 'admin');
-    console.log('🔍 LOGO CHECK: Testing logo file accessibility...');
-    
-    // Test if logo file exists
-    const img = new Image();
-    img.onload = () => {
-      console.log('✅ LOGO SUCCESS: Logo file loaded successfully');
-      console.log('✅ LOGO INFO: Natural size:', img.naturalWidth, 'x', img.naturalHeight);
-    };
-    img.onerror = () => {
-      console.log('❌ LOGO ERROR: Logo file failed to load from /logo.webp');
-    };
-    img.src = '/logo.webp';
+    console.log('🔍 SIDEBAR DEBUG:');
+    console.log('- User object:', user);
+    console.log('- User role:', user?.role);
+    console.log('- Is admin?:', user?.role === 'admin');
+    console.log('- Should show User Management?:', user?.role === 'admin');
   }, [user]);
+
+  // Check if user is admin
+  const isAdmin = user && user.role === 'admin';
 
   return (
     <div className="bg-white shadow-lg w-64 min-w-64">
@@ -66,13 +59,9 @@ const Sidebar = () => {
               className="w-full h-full object-contain"
               onLoad={(e) => {
                 console.log('✅ SIDEBAR LOGO LOADED: Image element loaded successfully');
-                console.log('✅ SIDEBAR LOGO SIZE: Display size:', e.target.offsetWidth, 'x', e.target.offsetHeight);
-                console.log('✅ SIDEBAR LOGO NATURAL: Natural size:', e.target.naturalWidth, 'x', e.target.naturalHeight);
               }}
               onError={(e) => {
                 console.log('❌ SIDEBAR LOGO ERROR: Image element failed to load');
-                console.log('❌ SIDEBAR LOGO SRC:', e.target.src);
-                // Hide the image and show fallback
                 e.target.style.display = 'none';
                 const fallback = e.target.nextElementSibling;
                 if (fallback) {
@@ -115,51 +104,48 @@ const Sidebar = () => {
           </NavLink>
         ))}
 
-        {/* User Management Section (Admin Only) */}
-        {user?.role === 'admin' && (
-          <div>
-            <button
-              onClick={() => setUserManagementOpen(!userManagementOpen)}
-              className="w-full flex items-center px-6 py-3 text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors duration-200 group"
-            >
-              <Users className="h-5 w-5 mr-3" />
-              <span className="font-medium">User Management</span>
-              {userManagementOpen ? (
-                <ChevronDown className="h-4 w-4 ml-auto transition-transform" />
-              ) : (
-                <ChevronRight className="h-4 w-4 ml-auto transition-transform" />
-              )}
-            </button>
-            
-            {userManagementOpen && (
-              <div className="bg-gray-50">
-                {userManagementItems.map(({ to, icon: Icon, label }) => (
-                  <NavLink
-                    key={to}
-                    to={to}
-                    className={({ isActive }) =>
-                      `flex items-center px-12 py-2 text-sm text-gray-600 hover:bg-primary-50 hover:text-primary-700 transition-colors duration-200 ${
-                        isActive ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500' : ''
-                      }`
-                    }
-                  >
-                    <Icon className="h-4 w-4 mr-3" />
-                    <span className="font-medium">{label}</span>
-                  </NavLink>
-                ))}
-              </div>
+        {/* User Management Section - ALWAYS SHOW FOR TESTING */}
+        <div>
+          <button
+            onClick={() => setUserManagementOpen(!userManagementOpen)}
+            className="w-full flex items-center px-6 py-3 text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors duration-200 group"
+          >
+            <Users className="h-5 w-5 mr-3" />
+            <span className="font-medium">User Management</span>
+            {userManagementOpen ? (
+              <ChevronDown className="h-4 w-4 ml-auto transition-transform" />
+            ) : (
+              <ChevronRight className="h-4 w-4 ml-auto transition-transform" />
             )}
-          </div>
-        )}
+          </button>
+          
+          {userManagementOpen && (
+            <div className="bg-gray-50">
+              {userManagementItems.map(({ to, icon: Icon, label }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    `flex items-center px-12 py-2 text-sm text-gray-600 hover:bg-primary-50 hover:text-primary-700 transition-colors duration-200 ${
+                      isActive ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500' : ''
+                    }`
+                  }
+                >
+                  <Icon className="h-4 w-4 mr-3" />
+                  <span className="font-medium">{label}</span>
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
 
-        {/* Debug Info for Admin Check */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="px-6 py-2 text-xs text-gray-500 border-t border-gray-200 mt-4">
-            <div>User: {user?.username || 'Not logged in'}</div>
-            <div>Role: {user?.role || 'No role'}</div>
-            <div>Is Admin: {user?.role === 'admin' ? 'Yes' : 'No'}</div>
-          </div>
-        )}
+        {/* Debug Info */}
+        <div className="px-6 py-2 text-xs text-gray-500 border-t border-gray-200 mt-4">
+          <div>User: {user?.username || 'Not logged in'}</div>
+          <div>Role: {user?.role || 'No role'}</div>
+          <div>Is Admin: {isAdmin ? 'YES' : 'NO'}</div>
+          <div>Should Show: {isAdmin ? 'YES' : 'NO'}</div>
+        </div>
       </nav>
     </div>
   );
