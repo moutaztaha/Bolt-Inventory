@@ -145,7 +145,8 @@ class DatabaseMigrator {
       'user_activity',
       'purchase_history',
       'inventory_movements',
-      'schema_migrations'
+      'schema_migrations',
+      'departments'
     ];
 
     // Remove CREATE TABLE statements for managed tables
@@ -367,6 +368,18 @@ class DatabaseMigrator {
         FOREIGN KEY (supplier_id) REFERENCES suppliers (id)
       )
     `);
+
+    // Departments table
+    await this.createTableIfNotExists('departments', `
+      CREATE TABLE departments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        description TEXT,
+        manager TEXT,
+        location TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
   }
 
   async ensureColumns() {
@@ -465,11 +478,13 @@ class DatabaseMigrator {
       { name: 'idx_user_activity_date', sql: 'CREATE INDEX idx_user_activity_date ON user_activity(created_at)' },
       { name: 'idx_users_active', sql: 'CREATE INDEX idx_users_active ON users(is_active)' },
       { name: 'idx_users_role', sql: 'CREATE INDEX idx_users_role ON users(role)' },
+      { name: 'idx_users_department', sql: 'CREATE INDEX idx_users_department ON users(department)' },
       { name: 'idx_purchase_history_inventory_id', sql: 'CREATE INDEX idx_purchase_history_inventory_id ON purchase_history(inventory_id)' },
       { name: 'idx_purchase_history_date', sql: 'CREATE INDEX idx_purchase_history_date ON purchase_history(purchase_date)' },
       { name: 'idx_movements_inventory_id', sql: 'CREATE INDEX idx_movements_inventory_id ON inventory_movements(inventory_id)' },
       { name: 'idx_movements_type', sql: 'CREATE INDEX idx_movements_type ON inventory_movements(movement_type)' },
-      { name: 'idx_movements_date', sql: 'CREATE INDEX idx_movements_date ON inventory_movements(created_at)' }
+      { name: 'idx_movements_date', sql: 'CREATE INDEX idx_movements_date ON inventory_movements(created_at)' },
+      { name: 'idx_departments_name', sql: 'CREATE INDEX idx_departments_name ON departments(name)' }
     ];
 
     for (const index of indexes) {

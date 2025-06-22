@@ -7,6 +7,10 @@ import Dashboard from './components/Dashboard';
 import Layout from './components/Layout';
 import Inventory from './components/Inventory';
 import UserManagement from './components/UserManagement';
+import Profile from './components/Profile';
+import DepartmentManagement from './components/DepartmentManagement';
+import UserReports from './components/UserReports';
+import PermissionManagement from './components/PermissionManagement';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -62,11 +66,36 @@ function App() {
             >
               <Route index element={<Dashboard />} />
               <Route path="inventory" element={<Inventory />} />
+              <Route path="profile" element={<Profile />} />
               <Route 
                 path="users" 
                 element={
                   <AdminRoute>
                     <UserManagement />
+                  </AdminRoute>
+                } 
+              />
+              <Route 
+                path="departments" 
+                element={
+                  <AdminRoute>
+                    <DepartmentManagement />
+                  </AdminRoute>
+                } 
+              />
+              <Route 
+                path="reports" 
+                element={
+                  <AdminRoute>
+                    <UserReports />
+                  </AdminRoute>
+                } 
+              />
+              <Route 
+                path="permissions" 
+                element={
+                  <AdminRoute>
+                    <PermissionManagement />
                   </AdminRoute>
                 } 
               />

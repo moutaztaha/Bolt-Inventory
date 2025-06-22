@@ -18,6 +18,9 @@ import supplierRoutes from './routes/suppliers.js';
 import dashboardRoutes from './routes/dashboard.js';
 import databaseRoutes from './routes/database.js';
 import importExportRoutes from './routes/import-export.js';
+import departmentRoutes from './routes/departments.js';
+import reportRoutes from './routes/reports.js';
+import uploadRoutes from './routes/upload.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,6 +38,9 @@ app.use(express.json());
 // Serve static files from dist directory (for production/preview)
 const distPath = path.join(__dirname, '../dist');
 app.use(express.static(distPath));
+
+// Serve uploaded files
+app.use('/uploads', express.static('uploads'));
 
 // Database setup with migration system
 const db = new sqlite3.Database('./warehouse.db');
@@ -84,7 +90,10 @@ app.use('/api/locations', authenticateToken, locationRoutes);
 app.use('/api/suppliers', authenticateToken, supplierRoutes);
 app.use('/api/dashboard', authenticateToken, dashboardRoutes);
 app.use('/api/database', authenticateToken, databaseRoutes);
+app.use('/api/departments', authenticateToken, requireAdmin, departmentRoutes);
+app.use('/api/reports', authenticateToken, reportRoutes);
 app.use('/api', authenticateToken, importExportRoutes);
+app.use('/api', authenticateToken, uploadRoutes);
 
 // Serve React app for all non-API routes (SPA fallback)
 app.get('*', (req, res) => {
@@ -209,7 +218,7 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
+process.on('un handledRejection', (reason, promise) => {
   console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
   process.exit(1);
 });

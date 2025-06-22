@@ -5,7 +5,11 @@ import {
   Package, 
   LayoutDashboard,
   Users,
-  ChevronRight
+  ChevronRight,
+  User,
+  Building,
+  BarChart3,
+  Shield
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -14,12 +18,16 @@ const Sidebar = () => {
   const navItems = [
     { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/inventory', icon: Package, label: 'Inventory' },
+    { to: '/profile', icon: User, label: 'My Profile' },
   ];
 
   // Add admin-only routes
   if (user?.role === 'admin') {
     navItems.push(
-      { to: '/users', icon: Users, label: 'User Management' }
+      { to: '/users', icon: Users, label: 'User Management' },
+      { to: '/departments', icon: Building, label: 'Departments' },
+      { to: '/reports', icon: BarChart3, label: 'Reports & Analytics' },
+      { to: '/permissions', icon: Shield, label: 'Permissions' }
     );
   }
 
@@ -41,7 +49,7 @@ const Sidebar = () => {
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex items-center px-6 py-3 text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors duration-200 ${
+              `flex items-center px-6 py-3 text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors duration-200 group ${
                 isActive ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500' : ''
               }`
             }
