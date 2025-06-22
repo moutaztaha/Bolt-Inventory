@@ -43,7 +43,7 @@ const Login = () => {
             <img 
               src="/logo.webp" 
               alt="Factory Management System" 
-              className="h-64 w-64 object-contain"
+              className="h-80 w-80 object-contain"
             />
           </div>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
