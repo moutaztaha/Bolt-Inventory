@@ -14,7 +14,9 @@ import {
   Lock,
   Unlock,
   Save,
-  RefreshCw
+  RefreshCw,
+  UserPlus,
+  Copy
 } from 'lucide-react';
 
 const PermissionManagement = () => {
@@ -22,6 +24,14 @@ const PermissionManagement = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('permissions');
   const [hasChanges, setHasChanges] = useState(false);
+  const [showAddRoleModal, setShowAddRoleModal] = useState(false);
+  const [editingRole, setEditingRole] = useState(null);
+  const [newRole, setNewRole] = useState({
+    id: '',
+    name: '',
+    description: '',
+    permissions: []
+  });
 
   // Default permissions structure
   const defaultPermissions = [
@@ -63,16 +73,18 @@ const PermissionManagement = () => {
     }
   ];
 
-  // Default role permissions (this is our "database" for now)
+  // Default role permissions with ability to add custom roles
   const [rolePermissions, setRolePermissions] = useState({
     admin: {
       name: 'Administrator',
       description: 'Full system access',
+      isDefault: true,
       permissions: defaultPermissions.flatMap(module => module.permissions)
     },
     manager: {
       name: 'Manager',
       description: 'Management level access',
+      isDefault: true,
       permissions: [
         'view_dashboard', 'view_stats',
         'view_inventory', 'create_inventory', 'edit_inventory', 'export_inventory', 'import_inventory',
@@ -87,6 +99,7 @@ const PermissionManagement = () => {
     user: {
       name: 'User',
       description: 'Basic user access',
+      isDefault: true,
       permissions: [
         'view_dashboard', 'view_stats',
         'view_inventory', 'create_inventory', 'edit_inventory',
@@ -100,6 +113,7 @@ const PermissionManagement = () => {
 
   useEffect(() => {
     fetchUsers();
+    loadCustomRoles();
   }, []);
 
   const fetchUsers = async () => {
@@ -112,6 +126,33 @@ const PermissionManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadCustomRoles = () => {
+    // Load custom roles from localStorage
+    const savedRoles = localStorage.getItem('customRoles');
+    if (savedRoles) {
+      try {
+        const customRoles = JSON.parse(savedRoles);
+        setRolePermissions(prev => ({
+          ...prev,
+          ...customRoles
+        }));
+      } catch (error) {
+        console.error('Error loading custom roles:', error);
+      }
+    }
+  };
+
+  const saveCustomRoles = (roles) => {
+    // Save only custom roles (non-default) to localStorage
+    const customRoles = {};
+    Object.entries(roles).forEach(([key, value]) => {
+      if (!value.isDefault) {
+        customRoles[key] = value;
+      }
+    });
+    localStorage.setItem('customRoles', JSON.stringify(customRoles));
   };
 
   const hasPermission = (role, permission) => {
@@ -129,41 +170,42 @@ const PermissionManagement = () => {
         ? currentPermissions.filter(p => p !== permission)
         : [...currentPermissions, permission];
 
-      setHasChanges(true);
-      
-      return {
+      const updatedRoles = {
         ...prev,
         [roleId]: {
           ...role,
           permissions: newPermissions
         }
       };
+
+      setHasChanges(true);
+      saveCustomRoles(updatedRoles);
+      
+      return updatedRoles;
     });
 
     toast.success(`Permission ${hasPermission(roleId, permission) ? 'removed' : 'added'} for ${rolePermissions[roleId]?.name}`);
   };
 
   const saveChanges = () => {
-    // In a real application, this would save to the server
-    // For now, we'll just show a success message
     setHasChanges(false);
     toast.success('Permission changes saved successfully!');
-    
-    // Log the current state for debugging
     console.log('Current role permissions:', rolePermissions);
   };
 
   const resetChanges = () => {
-    // Reset to default permissions
+    // Reset to default permissions and remove custom roles
     setRolePermissions({
       admin: {
         name: 'Administrator',
         description: 'Full system access',
+        isDefault: true,
         permissions: defaultPermissions.flatMap(module => module.permissions)
       },
       manager: {
         name: 'Manager',
         description: 'Management level access',
+        isDefault: true,
         permissions: [
           'view_dashboard', 'view_stats',
           'view_inventory', 'create_inventory', 'edit_inventory', 'export_inventory', 'import_inventory',
@@ -178,6 +220,7 @@ const PermissionManagement = () => {
       user: {
         name: 'User',
         description: 'Basic user access',
+        isDefault: true,
         permissions: [
           'view_dashboard', 'view_stats',
           'view_inventory', 'create_inventory', 'edit_inventory',
@@ -188,8 +231,113 @@ const PermissionManagement = () => {
         ]
       }
     });
+    localStorage.removeItem('customRoles');
     setHasChanges(false);
     toast.success('Permissions reset to defaults');
+  };
+
+  const handleAddRole = () => {
+    setEditingRole(null);
+    setNewRole({
+      id: '',
+      name: '',
+      description: '',
+      permissions: []
+    });
+    setShowAddRoleModal(true);
+  };
+
+  const handleEditRole = (roleId) => {
+    const role = rolePermissions[roleId];
+    if (role && !role.isDefault) {
+      setEditingRole(roleId);
+      setNewRole({
+        id: roleId,
+        name: role.name,
+        description: role.description,
+        permissions: [...role.permissions]
+      });
+      setShowAddRoleModal(true);
+    } else {
+      toast.error('Cannot edit default system roles');
+    }
+  };
+
+  const handleDeleteRole = (roleId) => {
+    const role = rolePermissions[roleId];
+    if (role && !role.isDefault) {
+      // Check if any users have this role
+      const usersWithRole = users.filter(user => user.role === roleId);
+      if (usersWithRole.length > 0) {
+        toast.error(`Cannot delete role. ${usersWithRole.length} user(s) are assigned to this role.`);
+        return;
+      }
+
+      setRolePermissions(prev => {
+        const updated = { ...prev };
+        delete updated[roleId];
+        saveCustomRoles(updated);
+        return updated;
+      });
+      toast.success(`Role "${role.name}" deleted successfully`);
+    } else {
+      toast.error('Cannot delete default system roles');
+    }
+  };
+
+  const handleDuplicateRole = (roleId) => {
+    const role = rolePermissions[roleId];
+    if (role) {
+      setEditingRole(null);
+      setNewRole({
+        id: '',
+        name: `${role.name} Copy`,
+        description: `Copy of ${role.description}`,
+        permissions: [...role.permissions]
+      });
+      setShowAddRoleModal(true);
+    }
+  };
+
+  const handleSaveRole = () => {
+    if (!newRole.name.trim()) {
+      toast.error('Role name is required');
+      return;
+    }
+
+    const roleId = editingRole || newRole.name.toLowerCase().replace(/\s+/g, '_');
+    
+    // Check if role ID already exists (for new roles)
+    if (!editingRole && rolePermissions[roleId]) {
+      toast.error('A role with this name already exists');
+      return;
+    }
+
+    setRolePermissions(prev => {
+      const updated = {
+        ...prev,
+        [roleId]: {
+          name: newRole.name,
+          description: newRole.description,
+          isDefault: false,
+          permissions: newRole.permissions
+        }
+      };
+      saveCustomRoles(updated);
+      return updated;
+    });
+
+    setShowAddRoleModal(false);
+    toast.success(`Role "${newRole.name}" ${editingRole ? 'updated' : 'created'} successfully`);
+  };
+
+  const toggleRolePermission = (permission) => {
+    setNewRole(prev => ({
+      ...prev,
+      permissions: prev.permissions.includes(permission)
+        ? prev.permissions.filter(p => p !== permission)
+        : [...prev.permissions, permission]
+    }));
   };
 
   const getPermissionIcon = (permission) => {
@@ -208,6 +356,24 @@ const PermissionManagement = () => {
     if (permission.includes('delete')) return 'text-red-600 bg-red-50';
     if (permission.includes('manage')) return 'text-purple-600 bg-purple-50';
     return 'text-gray-600 bg-gray-50';
+  };
+
+  const getRoleColor = (roleId) => {
+    switch (roleId) {
+      case 'admin': return 'bg-red-100 text-red-800';
+      case 'manager': return 'bg-blue-100 text-blue-800';
+      case 'user': return 'bg-green-100 text-green-800';
+      default: return 'bg-purple-100 text-purple-800';
+    }
+  };
+
+  const getRoleIconColor = (roleId) => {
+    switch (roleId) {
+      case 'admin': return 'bg-red-100 text-red-600';
+      case 'manager': return 'bg-blue-100 text-blue-600';
+      case 'user': return 'bg-green-100 text-green-600';
+      default: return 'bg-purple-100 text-purple-600';
+    }
   };
 
   const roles = Object.entries(rolePermissions).map(([key, value]) => ({
@@ -231,24 +397,34 @@ const PermissionManagement = () => {
           <p className="text-gray-600 mt-2">Manage user roles and granular permissions</p>
         </div>
         
-        {hasChanges && (
-          <div className="flex space-x-3">
-            <button
-              onClick={resetChanges}
-              className="btn-secondary flex items-center"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Reset
-            </button>
-            <button
-              onClick={saveChanges}
-              className="btn-primary flex items-center"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Save Changes
-            </button>
-          </div>
-        )}
+        <div className="flex space-x-3">
+          <button
+            onClick={handleAddRole}
+            className="btn-success flex items-center"
+          >
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add Role
+          </button>
+          
+          {hasChanges && (
+            <>
+              <button
+                onClick={resetChanges}
+                className="btn-secondary flex items-center"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Reset
+              </button>
+              <button
+                onClick={saveChanges}
+                className="btn-primary flex items-center"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save Changes
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Status Banner */}
@@ -256,10 +432,10 @@ const PermissionManagement = () => {
         <div className="flex items-center">
           <Shield className="h-5 w-5 text-blue-500 mr-2" />
           <div>
-            <h3 className="text-sm font-medium text-blue-900">Permission System Status</h3>
+            <h3 className="text-sm font-medium text-blue-900">Dynamic Role Management</h3>
             <p className="text-sm text-blue-700 mt-1">
-              This is a demonstration permission management system. Changes are stored locally and will reset on page refresh. 
-              In a production environment, these would be saved to the database.
+              Create custom roles with specific permissions. Default roles (Admin, Manager, User) cannot be deleted but can be modified. 
+              Custom roles are saved locally and persist across sessions.
             </p>
           </div>
         </div>
@@ -278,7 +454,7 @@ const PermissionManagement = () => {
               }`}
             >
               <Shield className="h-4 w-4 inline mr-2" />
-              Role Permissions
+              Role Permissions ({roles.length} roles)
             </button>
             <button
               onClick={() => setActiveTab('users')}
@@ -289,7 +465,7 @@ const PermissionManagement = () => {
               }`}
             >
               <Users className="h-4 w-4 inline mr-2" />
-              User Permissions
+              User Permissions ({users.length} users)
             </button>
           </nav>
         </div>
@@ -297,26 +473,59 @@ const PermissionManagement = () => {
         <div className="p-6">
           {activeTab === 'permissions' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {roles.map((role) => (
                   <div key={role.id} className="bg-gray-50 rounded-lg p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{role.name}</h3>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900">{role.name}</h3>
+                          {role.isDefault && (
+                            <span className="px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded-full">
+                              Default
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-600">{role.description}</p>
                         <p className="text-xs text-gray-500 mt-1">
                           {role.permissions.length} permissions assigned
                         </p>
                       </div>
-                      <div className={`p-2 rounded-lg ${
-                        role.id === 'admin' ? 'bg-red-100' :
-                        role.id === 'manager' ? 'bg-blue-100' : 'bg-green-100'
-                      }`}>
-                        <Shield className={`h-5 w-5 ${
-                          role.id === 'admin' ? 'text-red-600' :
-                          role.id === 'manager' ? 'text-blue-600' : 'text-green-600'
-                        }`} />
+                      <div className={`p-2 rounded-lg ${getRoleIconColor(role.id)}`}>
+                        <Shield className="h-5 w-5" />
                       </div>
+                    </div>
+
+                    {/* Role Actions */}
+                    <div className="flex space-x-2 mb-4">
+                      <button
+                        onClick={() => handleDuplicateRole(role.id)}
+                        className="flex-1 btn-secondary text-xs py-1 flex items-center justify-center"
+                        title="Duplicate Role"
+                      >
+                        <Copy className="h-3 w-3 mr-1" />
+                        Copy
+                      </button>
+                      {!role.isDefault && (
+                        <>
+                          <button
+                            onClick={() => handleEditRole(role.id)}
+                            className="flex-1 btn-primary text-xs py-1 flex items-center justify-center"
+                            title="Edit Role"
+                          >
+                            <Edit className="h-3 w-3 mr-1" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteRole(role.id)}
+                            className="flex-1 bg-red-500 hover:bg-red-600 text-white text-xs py-1 rounded flex items-center justify-center"
+                            title="Delete Role"
+                          >
+                            <Trash2 className="h-3 w-3 mr-1" />
+                            Delete
+                          </button>
+                        </>
+                      )}
                     </div>
 
                     <div className="space-y-4">
@@ -401,12 +610,8 @@ const PermissionManagement = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              user.role === 'admin' ? 'bg-red-100 text-red-800' :
-                              user.role === 'manager' ? 'bg-blue-100 text-blue-800' :
-                              'bg-green-100 text-green-800'
-                            }`}>
-                              {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>
+                              {userRole ? userRole.name : user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -454,7 +659,12 @@ const PermissionManagement = () => {
                 </th>
                 {roles.map((role) => (
                   <th key={role.id} className="text-center text-xs font-medium text-gray-500 uppercase tracking-wider py-3 px-4">
-                    {role.name}
+                    <div className="flex flex-col items-center">
+                      <span>{role.name}</span>
+                      {!role.isDefault && (
+                        <span className="text-xs text-purple-600 mt-1">Custom</span>
+                      )}
+                    </div>
                   </th>
                 ))}
               </tr>
@@ -505,6 +715,107 @@ const PermissionManagement = () => {
           </table>
         </div>
       </div>
+
+      {/* Add/Edit Role Modal */}
+      {showAddRoleModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[95vh] flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+              <h2 className="text-xl font-semibold text-gray-900">
+                {editingRole ? 'Edit Role' : 'Add New Role'}
+              </h2>
+              <button
+                onClick={() => setShowAddRoleModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-6">
+                {/* Role Details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Role Name *
+                    </label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={newRole.name}
+                      onChange={(e) => setNewRole(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="Enter role name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={newRole.description}
+                      onChange={(e) => setNewRole(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="Enter role description"
+                    />
+                  </div>
+                </div>
+
+                {/* Permissions */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Permissions ({newRole.permissions.length} selected)
+                  </h3>
+                  <div className="space-y-6">
+                    {defaultPermissions.map((module) => (
+                      <div key={module.module} className="bg-gray-50 rounded-lg p-4">
+                        <h4 className="font-medium text-gray-900 mb-3">{module.module}</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {module.permissions.map((permission) => (
+                            <div key={permission} className="flex items-center space-x-3">
+                              <input
+                                type="checkbox"
+                                id={permission}
+                                checked={newRole.permissions.includes(permission)}
+                                onChange={() => toggleRolePermission(permission)}
+                                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                              />
+                              <label htmlFor={permission} className="flex items-center space-x-2 text-sm text-gray-700 cursor-pointer">
+                                <div className={`p-1 rounded ${getPermissionColor(permission)}`}>
+                                  {getPermissionIcon(permission)}
+                                </div>
+                                <span>
+                                  {permission.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                </span>
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 flex-shrink-0">
+              <button
+                onClick={() => setShowAddRoleModal(false)}
+                className="btn-secondary"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveRole}
+                className="btn-primary"
+              >
+                {editingRole ? 'Update Role' : 'Create Role'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
