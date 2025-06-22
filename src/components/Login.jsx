@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { Package, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
@@ -40,13 +40,17 @@ const Login = () => {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex justify-center">
-            <Package className="h-12 w-12 text-primary-500" />
+            <img 
+              src="/logo.webp" 
+              alt="Factory Management System" 
+              className="h-16 w-16 object-contain"
+            />
           </div>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Warehouse Management System
+            Factory Management System
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Sign in to access your inventory
+            Sign in to access your factory operations
           </p>
         </div>
         

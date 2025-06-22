@@ -25,7 +25,7 @@ const Header = () => {
             Welcome back, {user?.username}!
           </h2>
           <p className="text-sm text-gray-600">
-            Manage your warehouse operations efficiently
+            Manage your factory operations efficiently
           </p>
         </div>
         

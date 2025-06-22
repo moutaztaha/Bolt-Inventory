@@ -49,10 +49,14 @@ const Sidebar = () => {
     <div className="bg-white w-64 shadow-lg">
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center space-x-3">
-          <Package className="h-8 w-8 text-primary-500" />
+          <img 
+            src="/logo.webp" 
+            alt="Factory Management System" 
+            className="h-8 w-8 object-contain"
+          />
           <div>
-            <h1 className="text-xl font-bold text-gray-800">WMS</h1>
-            <p className="text-xs text-gray-600">Warehouse Management</p>
+            <h1 className="text-xl font-bold text-gray-800">FMS</h1>
+            <p className="text-xs text-gray-600">Factory Management</p>
           </div>
         </div>
       </div>
